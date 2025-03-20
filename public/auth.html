@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firebase Auth</title>
+</head>
+
+<body>
+    <button id="googleLogin" type="button">Sign in with Google</button>
+    <button id="githubLogin" type="button">Sign in with GitHub</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js';
+        import {
+            getAuth,
+            GoogleAuthProvider,
+            GithubAuthProvider,
+            signInWithPopup,
+        } from 'https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0pfMTCE042ZEHmXE0DUrJHqQqBCDVE_4",
+            authDomain: "tok-tok-7f742.firebaseapp.com",
+            projectId: "tok-tok-7f742",
+            storageBucket: "tok-tok-7f742.firebasestorage.app",
+            messagingSenderId: "535831167648",
+            appId: "1:535831167648:web:e9dc8eb7df2b08c8d03fc5",
+            measurementId: "G-9T9MQ1VXX2"
+        };
+
+        // Firebase'i başlat
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Sağlayıcıları tanımla
+        const googleProvider = new GoogleAuthProvider();
+        const githubProvider = new GithubAuthProvider();
+
+        // Giriş fonksiyonu
+        async function signIn(provider) {
+            try {
+                let firebaseResult = await signInWithPopup(auth, provider);
+                let token = await firebaseResult.user.getIdToken();
+
+                let result = await fetch('http://localhost:3001/api/auth/firebase', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ token }),
+                });
+
+                let response = await result.json();
+                console.log(response);
+            } catch (err) {
+                console.error('Authentication Error:', err);
+                alert('Something went wrong');
+            }
+        }
+
+        document.getElementById('googleLogin').addEventListener('click', () => signIn(googleProvider));
+        document.getElementById('githubLogin').addEventListener('click', () => signIn(githubProvider));
+    </script>
+</body>
+
+</html>
