@@ -12,6 +12,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.1",
