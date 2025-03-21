@@ -1,48 +1,62 @@
 import { hash } from "bcrypt";
 import { UserProvider } from "src/shared/enums/User.enum";
-import { BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProfileEntity } from "./Profile.entity";
+import { FollowEntity } from "./Follow.entity";
+import { BanEntity } from "./Ban.entity";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id : number;
+    id: number;
 
     @Column()
-    username : string;
+    username: string;
 
-    @Column({nullable : true})
-    email : string;
+    @Column({ nullable: true })
+    email: string;
 
-    @Column({nullable : true})
-    phone : string;
+    @Column({ nullable: true })
+    phone: string;
 
     @Column()
-    password : string;
+    password: string;
 
-    @Column({default : false})
-    isPrivate : boolean;
+    @Column({ default: false })
+    isPrivate: boolean;
 
-    @Column({type : 'enum', enum : UserProvider, default : UserProvider.LOCAL})
-    provider : UserProvider
+    @Column({ type: 'enum', enum: UserProvider, default: UserProvider.LOCAL })
+    provider: UserProvider
 
-    @Column({nullable : true})
-    providerId : string;
+    @Column({ nullable: true })
+    providerId: string;
 
     @CreateDateColumn()
-    createdAt : Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    updatedAt : Date;
+    updatedAt: Date;
 
     @BeforeInsert()
     @BeforeUpdate()
-    async beforeUpsert(){
-        if(!this.password) return
+    async beforeUpsert() {
+        if (!this.password) return
 
         this.password = await hash(this.password, 10);
     }
 
-    @OneToOne(() => ProfileEntity, (item) => item.user, {cascade : true})
-    profile : ProfileEntity
+    @OneToOne(() => ProfileEntity, (item) => item.user, { cascade: true })
+    profile: ProfileEntity;
+
+    @OneToMany(() => FollowEntity, (follow: FollowEntity) => follow.from)
+    following: FollowEntity[]
+
+    @OneToMany(() => FollowEntity, (follow: FollowEntity) => follow.to)
+    follower: FollowEntity[]
+
+    @OneToMany(() => BanEntity, ban => ban.from)
+    bannedUsers: BanEntity[];
+
+    @OneToMany(() => BanEntity, ban => ban.to)
+    bannedBy: BanEntity[];
 }

@@ -21,3 +21,18 @@ export class AttemptEntity extends BaseEntity {
     @UpdateDateColumn({type : 'timestamptz'})
     updatedAt : Date;
 }
+
+@Entity('login_attempts')
+export class LoginAttemptEntity extends BaseEntity {
+    @PrimaryGeneratedColumn()
+    id : number;
+
+    @Column()
+    ip : string;
+
+    @Column()
+    userId : number;
+
+    @CreateDateColumn({type : 'timestamptz'})
+    createdAt : Date;
+}

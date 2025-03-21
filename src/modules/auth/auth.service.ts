@@ -12,7 +12,7 @@ import { ForgetPasswordConfirmDto, ForgetPasswordDto } from "./dto/forget-passwo
 import { OtpEntity } from "src/database/entity/Otp.entity";
 import { generate } from 'otp-generator';
 import { addMinutes } from "date-fns";
-import { AttemptEntity } from "src/database/entity/Attempt.entity";
+import { AttemptEntity, LoginAttemptEntity } from "src/database/entity/Attempt.entity";
 import { v4 } from "uuid";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { ClsService } from "nestjs-cls";
@@ -25,6 +25,7 @@ export class AuthService {
     private otpRepo: Repository<OtpEntity>
     private attemptRepo: Repository<AttemptEntity>
     private imageRepo: Repository<ImageEntity>
+    private loginAttemptRepo: Repository<LoginAttemptEntity>
 
     constructor(
         @InjectDataSource() private dataSource: DataSource,
@@ -37,7 +38,8 @@ export class AuthService {
         this.otpRepo = this.dataSource.getRepository(OtpEntity)
         this.attemptRepo = this.dataSource.getRepository(AttemptEntity)
         this.imageRepo = this.dataSource.getRepository(ImageEntity)
-    }   
+        this.loginAttemptRepo = this.dataSource.getRepository(LoginAttemptEntity)
+    }
 
     async register(params: RegisterDto) {
         if (!params.email && !params.phone) throw new BadRequestException("Email or phone is required")
@@ -160,9 +162,16 @@ export class AuthService {
 
         if (!user) throw new UnauthorizedException("Username or password is wrong")
 
+        await this.checkLoginAttempts(user)
+
         let checkPaasword = await compare(params.password, user.password)
 
-        if (!checkPaasword) throw new UnauthorizedException("Username or password is wrong")
+        if (!checkPaasword) {
+            await this.addLoginAttempts(user)
+            throw new UnauthorizedException("Username or password is wrong")
+        }
+
+        await this.clearAllAttempts(user)
 
         let token = this.generateToken(user.id)
 
@@ -374,7 +383,7 @@ export class AuthService {
                 email,
                 profile: {
                     fullName: result.name,
-                    imageId : image?.id
+                    imageId: image?.id
                 }
             })
 
@@ -395,5 +404,46 @@ export class AuthService {
         return {
             token
         }
+    }
+
+    async checkLoginAttempts(user: UserEntity) {
+        let ip = this.cls.get("ip")
+
+        let attempts = await this.loginAttemptRepo.count({
+            where: {
+                ip,
+                userId: user.id
+            }
+        })
+
+        if (attempts > 5) {
+            throw new HttpException(
+                'Please try again later',
+                HttpStatus.TOO_MANY_REQUESTS,
+            );
+        }
+    }
+
+    async addLoginAttempts(user : UserEntity){
+        let ip = this.cls.get("ip")
+
+        let attempt = this.loginAttemptRepo.create({
+            ip,
+            userId : user.id,
+            createdAt : new Date()
+        })
+
+        await attempt.save()
+
+        return true
+    }
+
+    async clearAllAttempts(user : UserEntity){
+        let ip = this.cls.get("ip")
+
+        await this.loginAttemptRepo.delete({
+            userId : user.id,
+            ip
+        })
     }
 }

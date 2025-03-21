@@ -11,7 +11,7 @@ export class ProfileEntity extends BaseEntity {
     fullName: string;
 
     @Column({ nullable: true })
-    birth: Date;
+    birth: string;
 
     @Column({ nullable: true })
     occupation: string;
@@ -19,8 +19,17 @@ export class ProfileEntity extends BaseEntity {
     @Column({ nullable: true })
     bio: string;
 
+    @Column({default : 0})
+    follower : number;
+
+    @Column({default : 0})
+    following : number;
+
+    @Column({default : 0})
+    postCount: number;
+
     @Column()
-    userId: string;
+    userId: number;
 
     @OneToOne(() => UserEntity, (item) => item.profile, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId', referencedColumnName: 'id'})

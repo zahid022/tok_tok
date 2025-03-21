@@ -12,6 +12,10 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { ScheduleModule } from '@nestjs/schedule';
 import { JobModule } from './jobs/job.module';
 import { UserModule } from './modules/user/user.module';
+import { Request } from 'express';
+import { ProfileModule } from './modules/user/profile/profile.module';
+import { UploadModule } from './modules/upload/upload.module';
+import { FollowModule } from './modules/follow/follow.module';
 
 @Module({
   imports: [
@@ -37,6 +41,9 @@ import { UserModule } from './modules/user/user.module';
       global: true,
       middleware: {
         mount: true,
+        setup: (cls, req: Request) => {
+          cls.set('ip', req.ip);
+        },
       },
     }),
     JwtModule.registerAsync({
@@ -80,7 +87,10 @@ import { UserModule } from './modules/user/user.module';
     ScheduleModule.forRoot(),
     AuthModule,
     JobModule,
-    UserModule
+    UserModule,
+    ProfileModule,
+    UploadModule,
+    FollowModule
   ],
   controllers: [],
   providers: [AppService],
