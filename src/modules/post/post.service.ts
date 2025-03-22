@@ -87,6 +87,35 @@ export class PostService {
         }
     }
 
+    async item(id: number) {
+        let myUser = this.cls.get<UserEntity>("user")
+
+        let post = await this.postRepo.findOne({
+            where: {
+                id
+            },
+            relations: ['media', 'taggedUsers', 'user', 'user.profile', 'user.profile.image'],
+            select: PostsSelect
+        })
+
+        if (!post) throw new NotFoundException("Post is not found")
+
+        if (post.user.id !== myUser.id) {
+            let isBan = await this.banService.checkBan(myUser.id, post.user.id)
+            if (isBan) throw new ForbiddenException("You are banned from accessing this post.")
+
+            let user = await this.userService.findUser(post.user.id)
+            if (!user) throw new BadRequestException("Something went wrong")
+
+            if (user.isPrivate) {
+                let access = await this.followService.checkFollow(myUser.id, post.user.id)
+                if (!access) throw new ForbiddenException("You do not have permission to access this post.")
+            }
+        }
+
+        return post
+    }
+
     async myPosts(params: PaginationDto) {
         let user = this.cls.get<UserEntity>("user")
 
@@ -98,7 +127,7 @@ export class PostService {
                 userId: user.id,
                 isActive: true
             },
-            relations: ['media', 'taggedUsers'],
+            relations: ['media', 'taggedUsers', 'user', 'user.profile', 'user.profile.image'],
             select: PostsSelect,
             order: { createdAt: "DESC" },
             take: limit,
@@ -139,7 +168,7 @@ export class PostService {
                 userId: user.id,
                 isActive: true
             },
-            relations: ['media', 'taggedUsers'],
+            relations: ['media', 'taggedUsers', 'user', 'user.profile', 'user.profile.image'],
             select: PostsSelect,
             order: { createdAt: "DESC" },
             take: limit,
@@ -171,8 +200,53 @@ export class PostService {
         await this.profileService.incrementField(post.userId, 'postCount', -1)
 
         return {
-            message : "Post is deleted successfully"
+            message: "Post is deleted successfully"
         }
 
+    }
+
+    async listArchive(params: PaginationDto) {
+        let user = this.cls.get<UserEntity>("user")
+
+        let page = (params.page || 1) - 1;
+        let limit = params.limit;
+
+        let list = await this.postRepo.find({
+            where: {
+                userId: user.id,
+                isActive: false
+            },
+            relations: ['media', 'taggedUsers', 'user', 'user.profile', 'user.profile.image'],
+            select: PostsSelect,
+            order: { createdAt: "DESC" },
+            take: limit,
+            skip: page * limit
+        })
+
+        return list
+    }
+
+    async toggleArchive(id: number) {
+        let user = this.cls.get<UserEntity>("user")
+
+        let post = await this.postRepo.findOne({
+            where: {
+                id
+            }
+        })
+
+        if (!post) throw new NotFoundException("Post is not found")
+
+        if (user.id !== post.userId) {
+            throw new ForbiddenException("You do not have permission to archive this post.");
+        }
+
+        post.isActive = !post.isActive
+
+        await post.save()
+
+        return {
+            message: `Post has been ${post.isActive ? "unarchived" : "archived"}.`
+        }
     }
 }

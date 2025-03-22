@@ -1,3 +1,5 @@
+import { BasicUserSelect } from "./user.select";
+
 export const PostsSelect = {
     id : true,
     content : true,
@@ -14,5 +16,6 @@ export const PostsSelect = {
     taggedUsers : {
         id : true,
         username : true
-    }
+    },
+    user : BasicUserSelect
 }

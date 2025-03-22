@@ -20,6 +20,20 @@ export class PostController {
         return this.postService.myPosts(query)
     }
 
+    @Get("archive")
+    listArchive(
+        @Query() query: PaginationDto
+    ){
+        return this.postService.listArchive(query)
+    }
+
+    @Get(":id")
+    item(
+        @Param("id") id : number
+    ){
+        return this.postService.item(id)
+    }
+
     @Post()
     createPost(
         @Body() body : CreatePostDto
@@ -32,5 +46,12 @@ export class PostController {
         @Param("id") id : number
     ){
         return this.postService.deletePost(id)
+    }
+
+    @Post(":id/archive")
+    toggleArchive(
+        @Param("id") id : number
+    ){
+        return this.postService.toggleArchive(id)
     }
 }
