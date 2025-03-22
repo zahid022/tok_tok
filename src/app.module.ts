@@ -16,6 +16,8 @@ import { Request } from 'express';
 import { ProfileModule } from './modules/user/profile/profile.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { FollowModule } from './modules/follow/follow.module';
+import { MediaModule } from './modules/media/media.module';
+import { PostModule } from './modules/post/post.module';
 
 @Module({
   imports: [
@@ -90,7 +92,9 @@ import { FollowModule } from './modules/follow/follow.module';
     UserModule,
     ProfileModule,
     UploadModule,
-    FollowModule
+    FollowModule,
+    MediaModule,
+    PostModule
   ],
   controllers: [],
   providers: [AppService],

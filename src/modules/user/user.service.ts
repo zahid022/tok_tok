@@ -8,6 +8,7 @@ import { UpdateStatusDto } from "./dto/update-status.dto";
 import { UpdateEmailDto } from "./dto/update-email.dto";
 import { MailerService } from "@nestjs-modules/mailer";
 import { FollowService } from "../follow/follow.service";
+import { PostService } from "../post/post.service";
 
 @Injectable()
 export class UserService {
@@ -18,7 +19,7 @@ export class UserService {
         private cls: ClsService,
         private mailService: MailerService,
         @Inject(forwardRef(() => FollowService))
-        private followService : FollowService
+        private followService: FollowService
     ) {
         this.userRepo = this.dataSource.getRepository(UserEntity)
     }
@@ -31,6 +32,12 @@ export class UserService {
         if (!user) throw new NotFoundException("User is not found")
 
         return user
+    }
+
+    findUsers(ids: number[]) {
+        return this.userRepo.findBy({
+            id: In(ids)
+        });
     }
 
     async suggetionsUsername(username: string) {
@@ -134,12 +141,12 @@ export class UserService {
             template: 'update-email',
             context: {
                 username: myUser.username,
-                newEmail : params.email
+                newEmail: params.email
             }
         })
 
         return {
-            message : "Email is updated successfully"
+            message: "Email is updated successfully"
         }
     }
 }

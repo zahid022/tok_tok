@@ -1,9 +1,13 @@
 import { hash } from "bcrypt";
 import { UserProvider } from "src/shared/enums/User.enum";
-import { BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProfileEntity } from "./Profile.entity";
 import { FollowEntity } from "./Follow.entity";
 import { BanEntity } from "./Ban.entity";
+import { PostEntity } from "./Post.entity";
+import { PostActionEntity } from "./PostAction.entity";
+import { PostCommentEntity } from "./PostComment.entity";
+import { CommentLikeEntity } from "./CommentLike.entity";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -59,4 +63,19 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => BanEntity, ban => ban.to)
     bannedBy: BanEntity[];
+
+    @OneToMany(() => PostEntity, (post: PostEntity) => post.user)
+    posts: PostEntity[]
+
+    @OneToMany(() => PostActionEntity, (action: PostActionEntity) => action.user)
+    postActions: PostActionEntity[]
+
+    @OneToMany(() => PostCommentEntity, (comment) => comment.user)
+    comments: PostCommentEntity[]
+
+    @OneToMany(() => CommentLikeEntity, (like: CommentLikeEntity) => like.user)
+    commentLikes: CommentLikeEntity[]
+
+    @ManyToMany(() => PostEntity, post => post.taggedUsers)
+    taggedInPosts: PostEntity[];
 }
