@@ -27,6 +27,9 @@ export class PostEntity extends BaseEntity {
     @Column({ default: 0 })
     commentCount: number;
 
+    @Column({default : 0})
+    shared : number;
+
     @CreateDateColumn()
     createdAt: Date;
 

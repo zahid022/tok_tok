@@ -18,6 +18,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { FollowModule } from './modules/follow/follow.module';
 import { MediaModule } from './modules/media/media.module';
 import { PostModule } from './modules/post/post.module';
+import { StoryModule } from './modules/story/story.module';
 
 @Module({
   imports: [
@@ -94,7 +95,8 @@ import { PostModule } from './modules/post/post.module';
     UploadModule,
     FollowModule,
     MediaModule,
-    PostModule
+    PostModule,
+    StoryModule
   ],
   controllers: [],
   providers: [AppService],

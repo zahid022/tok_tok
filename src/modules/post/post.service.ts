@@ -11,6 +11,7 @@ import { FollowService } from "../follow/follow.service";
 import { BanService } from "../ban/ban.service";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { PostsSelect } from "src/shared/selects/post.selects";
+import { PostActionService } from "./post_action/post_action.service";
 
 @Injectable()
 export class PostService {
@@ -26,6 +27,8 @@ export class PostService {
         private followService: FollowService,
         @Inject(forwardRef(() => BanService))
         private banService: BanService,
+        @Inject(forwardRef(() => PostActionService))
+        private postActionService : PostActionService,
         private cls: ClsService
     ) {
         this.postRepo = this.dataSource.getRepository(PostEntity)
@@ -87,6 +90,18 @@ export class PostService {
         }
     }
 
+    async findPost(id : number){
+        let post = await this.postRepo.findOne({
+            where : {
+                id
+            }
+        })
+
+        if(!post) throw new NotFoundException("Post is not found")
+
+        return post
+    }
+
     async item(id: number) {
         let myUser = this.cls.get<UserEntity>("user")
 
@@ -112,6 +127,8 @@ export class PostService {
                 if (!access) throw new ForbiddenException("You do not have permission to access this post.")
             }
         }
+
+        await this.postActionService.viewPost(post.id)
 
         return post
     }
@@ -248,5 +265,9 @@ export class PostService {
         return {
             message: `Post has been ${post.isActive ? "unarchived" : "archived"}.`
         }
+    }
+
+    async incrementField(postId : number, field : 'like' | 'view' | 'commentCount' | 'shared' , value : number){
+        await this.postRepo.increment({id : postId}, field, value)
     }
 }

@@ -8,6 +8,8 @@ import { PostEntity } from "./Post.entity";
 import { PostActionEntity } from "./PostAction.entity";
 import { PostCommentEntity } from "./PostComment.entity";
 import { CommentLikeEntity } from "./CommentLike.entity";
+import { StoryEntity } from "./Story.entity";
+import { HighlightEntity } from "./Highlight.entity";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -78,4 +80,10 @@ export class UserEntity extends BaseEntity {
 
     @ManyToMany(() => PostEntity, post => post.taggedUsers)
     taggedInPosts: PostEntity[];
+
+    @OneToMany(() => StoryEntity, (story) => story.user)
+    stories: StoryEntity[];
+
+    @OneToMany(() => HighlightEntity, (highlight) => highlight.user)
+    highlights: HighlightEntity[];
 }
