@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, BaseEntity, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, BaseEntity, OneToOne, JoinColumn, OneToMany } from "typeorm";
 import { UserEntity } from "./User.entity";
 import { MediaEntity } from "./Media.entity";
+import { StoryActionEntity } from "./StoryAction.entity";
 
 @Entity("stories")
 export class StoryEntity extends BaseEntity {
@@ -18,11 +19,14 @@ export class StoryEntity extends BaseEntity {
     media : MediaEntity;
 
     @Column({default : 0})
-    likeCount : number;
+    view : number;
 
     @CreateDateColumn({type : 'timestamptz'})
     createdAt: Date;
 
     @Column({default : true}) 
     isActive: boolean;
+
+    @OneToMany(() => StoryActionEntity, (action) => action.story)
+    actions : StoryActionEntity[]
 }

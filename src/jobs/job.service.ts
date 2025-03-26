@@ -4,6 +4,7 @@ import { InjectDataSource } from "@nestjs/typeorm";
 import { addHours } from "date-fns";
 import { AttemptEntity, LoginAttemptEntity } from "src/database/entity/Attempt.entity";
 import { OtpEntity } from "src/database/entity/Otp.entity";
+import { StoryEntity } from "src/database/entity/Story.entity";
 import { DataSource, LessThan, MoreThan, Repository } from "typeorm";
 
 @Injectable()
@@ -11,7 +12,8 @@ export class JobService {
 
     private attemptRepo: Repository<AttemptEntity>
     private otpRepo: Repository<OtpEntity>
-    private loginAttemptRepo : Repository<LoginAttemptEntity>
+    private loginAttemptRepo: Repository<LoginAttemptEntity>
+    private storyRepo: Repository<StoryEntity>
 
     constructor(
         @InjectDataSource() private dataSource: DataSource
@@ -19,6 +21,7 @@ export class JobService {
         this.attemptRepo = this.dataSource.getRepository(AttemptEntity)
         this.otpRepo = this.dataSource.getRepository(OtpEntity)
         this.loginAttemptRepo = this.dataSource.getRepository(LoginAttemptEntity)
+        this.storyRepo = this.dataSource.getRepository(StoryEntity)
     }
 
     @Cron(CronExpression.EVERY_10_MINUTES)
@@ -41,5 +44,16 @@ export class JobService {
         await this.loginAttemptRepo.delete({
             createdAt: LessThan(addHours(new Date(), -1)),
         });
+    }
+
+    @Cron(CronExpression.EVERY_10_MINUTES)
+    async changeStoryStatus() {
+        const twentyFourHoursAgo = new Date();
+        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+        await this.storyRepo.update(
+            { createdAt: LessThan(twentyFourHoursAgo) },
+            { isActive: false }
+        );
     }
 }

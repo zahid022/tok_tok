@@ -10,6 +10,7 @@ import { PostCommentEntity } from "./PostComment.entity";
 import { CommentLikeEntity } from "./CommentLike.entity";
 import { StoryEntity } from "./Story.entity";
 import { HighlightEntity } from "./Highlight.entity";
+import { StoryActionEntity } from "./StoryAction.entity";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -86,4 +87,7 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => HighlightEntity, (highlight) => highlight.user)
     highlights: HighlightEntity[];
+
+    @OneToMany(() => StoryActionEntity, (action: StoryActionEntity) => action.user)
+    storyActions: StoryActionEntity[]
 }

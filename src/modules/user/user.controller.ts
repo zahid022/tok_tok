@@ -9,6 +9,8 @@ import { FollowService } from "../follow/follow.service";
 import { BanService } from "../ban/ban.service";
 import { PostService } from "../post/post.service";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
+import { StoryService } from "../story/story.service";
+import { HighlightService } from "../highlight/highlight.service";
 
 @Controller("user")
 @UseGuards(AuthGuard)
@@ -18,7 +20,9 @@ export class UserController {
         private userService: UserService,
         private followService: FollowService,
         private banService: BanService,
-        private postService: PostService
+        private postService: PostService,
+        private storyService : StoryService,
+        private higlightService : HighlightService
     ) { }
 
     @Get(":id/followers")
@@ -86,5 +90,34 @@ export class UserController {
         @Query() query: PaginationDto
     ) {
         return this.postService.userPosts(id, query)
+    }
+
+    @Get(":id/story/all")
+    myList(
+        @Param("id") id : number,
+        @Query() query : PaginationDto
+    ){
+        return this.storyService.myList(query)
+    }
+
+    @Get(":id/story/active/me")
+    myStoryActiveList(
+        @Param("id") id : number
+    ){
+        return this.storyService.myStoryActiveList()
+    }
+
+    @Get(":id/story")
+    userStoryActiveList(
+        @Param("id") id : number
+    ){
+        return this.storyService.userStoryActiveList(id)
+    }
+
+    @Get(":id/highlights")
+    highlightList(
+        @Param("id") id : number
+    ){
+        return this.higlightService.highlightList(id)
     }
 }

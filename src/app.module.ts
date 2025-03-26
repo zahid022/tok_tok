@@ -19,6 +19,7 @@ import { FollowModule } from './modules/follow/follow.module';
 import { MediaModule } from './modules/media/media.module';
 import { PostModule } from './modules/post/post.module';
 import { StoryModule } from './modules/story/story.module';
+import { HighlightModule } from './modules/highlight/highlight.module';
 
 @Module({
   imports: [
@@ -96,7 +97,8 @@ import { StoryModule } from './modules/story/story.module';
     FollowModule,
     MediaModule,
     PostModule,
-    StoryModule
+    StoryModule,
+    HighlightModule
   ],
   controllers: [],
   providers: [AppService],
