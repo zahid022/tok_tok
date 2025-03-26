@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsEmail, IsNumber, IsPositive, IsString, IsUrl, IsUUID, MinLength } from "class-validator";
+import { IsEmail, IsOptional, IsString, IsUrl, MinLength } from "class-validator";
 
 export class ForgetPasswordDto {
     @Type()
@@ -10,6 +10,7 @@ export class ForgetPasswordDto {
 
     @Type()
     @IsUrl()
+    @IsOptional()
     @ApiProperty({default : ''})
     resetLink : string;
 }

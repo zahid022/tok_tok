@@ -11,6 +11,7 @@ import { PostService } from "../post/post.service";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { StoryService } from "../story/story.service";
 import { HighlightService } from "../highlight/highlight.service";
+import { SearchUserDto } from "./dto/search-user.dto";
 
 @Controller("user")
 @UseGuards(AuthGuard)
@@ -30,6 +31,13 @@ export class UserController {
         @Param("id") id: number
     ) {
         return this.followService.listFollower(id)
+    }
+
+    @Get("search")
+    searchUser(
+        @Query() query : SearchUserDto
+    ){
+        return this.userService.searchUser(query)
     }
 
     @Get(":id/followings")

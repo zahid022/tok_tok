@@ -232,7 +232,6 @@ export class AuthService {
             await otp.save()
         }
 
-        const resetLink = `${params.resetLink}`;
 
         try {
             await this.mailService.sendMail({
@@ -242,7 +241,7 @@ export class AuthService {
                 context: {
                     username: user.username,
                     code: otp.code,
-                    resetLink
+                    resetLink : params.resetLink
                 },
             });
 

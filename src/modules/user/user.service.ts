@@ -1,7 +1,7 @@
 import { ConflictException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { UserEntity } from "src/database/entity/User.entity";
-import { DataSource, In, Repository } from "typeorm";
+import { DataSource, In, Like, Repository } from "typeorm";
 import { UpdateUsernameDto } from "./dto/update-username.dto";
 import { ClsService } from "nestjs-cls";
 import { UpdateStatusDto } from "./dto/update-status.dto";
@@ -9,6 +9,7 @@ import { UpdateEmailDto } from "./dto/update-email.dto";
 import { MailerService } from "@nestjs-modules/mailer";
 import { FollowService } from "../follow/follow.service";
 import { PostService } from "../post/post.service";
+import { SearchUserDto } from "./dto/search-user.dto";
 
 @Injectable()
 export class UserService {
@@ -38,6 +39,21 @@ export class UserService {
         return this.userRepo.findBy({
             id: In(ids)
         });
+    }
+
+    async searchUser(params: SearchUserDto) {
+        let page = (params.page || 1) - 1;
+        let limit = params.limit;
+
+        let users = await this.userRepo.find({
+            where: {
+                username: Like(`${params.name}%`)
+            },
+            skip: page * limit,
+            take: limit
+        });
+
+        return users;
     }
 
     async suggetionsUsername(username: string) {
