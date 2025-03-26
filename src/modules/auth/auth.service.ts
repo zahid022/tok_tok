@@ -8,7 +8,7 @@ import { JwtService } from "@nestjs/jwt";
 import { LoginDto, LoginWithFirebaseDto } from "./dto/login.dto";
 import { compare } from "bcrypt";
 import { MailerService } from "@nestjs-modules/mailer";
-import { ForgetPasswordConfirmDto, ForgetPasswordDto } from "./dto/forget-password.dto";
+import { ConfirmOtpDto, ForgetPasswordConfirmDto, ForgetPasswordDto } from "./dto/forget-password.dto";
 import { OtpEntity } from "src/database/entity/Otp.entity";
 import { generate } from 'otp-generator';
 import { addMinutes } from "date-fns";
@@ -226,13 +226,13 @@ export class AuthService {
                 userId: user.id,
                 code,
                 expireTime: addMinutes(new Date(), 30),
-                token: v4()
+                token : v4()
             })
 
             await otp.save()
         }
 
-        const resetLink = `${params.resetLink}?token=${otp.token}`;
+        const resetLink = `${params.resetLink}`;
 
         try {
             await this.mailService.sendMail({
@@ -258,19 +258,34 @@ export class AuthService {
         }
     }
 
+    async confirmOtpCode(params : ConfirmOtpDto){
+        let otp = await this.otpRepo.findOne({
+            where : {
+                code : params.code,
+                expireTime: MoreThan(new Date())
+            }
+        })
+
+        if(!otp) throw new NotFoundException("Otp code is wrong")
+
+        return {
+            token : otp.token
+        }
+    }
+
     async forgetPasswordConfirm(params: ForgetPasswordConfirmDto) {
         if (params.newPassword !== params.repeatPassword) {
             throw new BadRequestException("Repeat password is not match with new password");
         }
 
-        const otp = await this.otpRepo.findOne({
-            where: {
-                token: params.token,
+        let otp = await this.otpRepo.findOne({
+            where : {
+                token : params.token,
                 expireTime: MoreThan(new Date())
             }
-        });
+        })
 
-        if (!otp) throw new NotFoundException("Invalid token");
+        if(!otp) throw new BadRequestException("Token is invalid")
 
         const [user, attemptCheck] = await Promise.all([
             this.userRepo.findOne({
@@ -297,12 +312,6 @@ export class AuthService {
                 'Too many requests',
                 HttpStatus.TOO_MANY_REQUESTS,
             );
-        }
-
-        if (otp.code !== params.code) {
-            attempt.attempt += 1;
-            await attempt.save();
-            throw new BadRequestException("Otp code is wrong");
         }
 
         user.password = params.newPassword;

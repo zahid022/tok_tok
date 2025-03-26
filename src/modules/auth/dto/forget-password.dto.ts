@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsEmail, IsString, IsUrl, IsUUID, MinLength } from "class-validator";
+import { IsEmail, IsNumber, IsPositive, IsString, IsUrl, IsUUID, MinLength } from "class-validator";
 
 export class ForgetPasswordDto {
     @Type()
@@ -14,18 +14,15 @@ export class ForgetPasswordDto {
     resetLink : string;
 }
 
-export class ForgetPasswordConfirmDto {
-    @Type()
-    @IsUUID()
-    @ApiProperty({default : ''})
-    token : string;
-
+export class ConfirmOtpDto {
     @Type()
     @IsString()
     @MinLength(4)
     @ApiProperty({default : ''})
     code : string;
+}
 
+export class ForgetPasswordConfirmDto {
     @Type()
     @IsString()
     @MinLength(8)
@@ -37,4 +34,10 @@ export class ForgetPasswordConfirmDto {
     @MinLength(8)
     @ApiProperty({default : ''})
     repeatPassword : string;
+
+    @Type()
+    @IsString()
+    @MinLength(1)
+    @ApiProperty({default : ''})
+    token : string;
 }
