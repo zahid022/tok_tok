@@ -8,6 +8,7 @@ export const PostsSelect = {
     view : true,
     commentCount : true,
     createdAt : true,
+    shared : true,
     updatedAt : true,
     media : {
         id : true,

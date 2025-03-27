@@ -8,7 +8,6 @@ import { UpdateStatusDto } from "./dto/update-status.dto";
 import { UpdateEmailDto } from "./dto/update-email.dto";
 import { MailerService } from "@nestjs-modules/mailer";
 import { FollowService } from "../follow/follow.service";
-import { PostService } from "../post/post.service";
 import { SearchUserDto } from "./dto/search-user.dto";
 
 @Injectable()
@@ -164,5 +163,15 @@ export class UserService {
         return {
             message: "Email is updated successfully"
         }
+    }
+
+    async incrementReportCount(id : number){
+        let user = await this.findUser(id)
+
+        if(!user) throw new NotFoundException("User is not found")
+
+        await this.userRepo.increment({id : user.id}, 'reportCount', 1)
+
+        return true
     }
 }

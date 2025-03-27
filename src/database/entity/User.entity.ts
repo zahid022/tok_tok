@@ -38,10 +38,16 @@ export class UserEntity extends BaseEntity {
     @Column({ nullable: true })
     providerId: string;
 
-    @CreateDateColumn()
+    @Column({default : 0})
+    reportCount : number;
+
+    @Column({default : false})
+    isReport : boolean;
+
+    @CreateDateColumn({type : "timestamptz"})
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type : "timestamptz"})
     updatedAt: Date;
 
     @BeforeInsert()

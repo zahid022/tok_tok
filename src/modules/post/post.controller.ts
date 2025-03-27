@@ -20,6 +20,13 @@ export class PostController {
         return this.postService.myPosts(query)
     }
 
+    @Get("feed")
+    feed(
+        @Query() query : PaginationDto
+    ){
+        return this.postService.feed(query)
+    }
+
     @Get("archive")
     listArchive(
         @Query() query: PaginationDto

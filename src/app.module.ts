@@ -20,6 +20,8 @@ import { MediaModule } from './modules/media/media.module';
 import { PostModule } from './modules/post/post.module';
 import { StoryModule } from './modules/story/story.module';
 import { HighlightModule } from './modules/highlight/highlight.module';
+import { ReportModule } from './modules/report/report.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -98,7 +100,9 @@ import { HighlightModule } from './modules/highlight/highlight.module';
     MediaModule,
     PostModule,
     StoryModule,
-    HighlightModule
+    HighlightModule,
+    ReportModule,
+    ChatModule
   ],
   controllers: [],
   providers: [AppService],

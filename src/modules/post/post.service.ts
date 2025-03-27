@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { PostEntity } from "src/database/entity/Post.entity";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { UserService } from "../user/user.service";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { ClsService } from "nestjs-cls";
@@ -28,10 +28,39 @@ export class PostService {
         @Inject(forwardRef(() => BanService))
         private banService: BanService,
         @Inject(forwardRef(() => PostActionService))
-        private postActionService : PostActionService,
+        private postActionService: PostActionService,
         private cls: ClsService
     ) {
         this.postRepo = this.dataSource.getRepository(PostEntity)
+    }
+
+    async feed(params: PaginationDto) {
+        let myUser = this.cls.get<UserEntity>("user")
+
+        let page = (params.page || 1) - 1;
+        let limit = params.limit;
+
+        let followings = await this.followService.listFollowing(myUser.id)
+
+        if (followings.length === 0) {
+            throw new NotFoundException("Followings is not found");
+        }
+
+        let ids = followings.map(item => item.to.id);
+
+        let list = await this.postRepo.find({
+            where: {
+                userId: In(ids),
+                isActive: true
+            },
+            relations: ['media', 'user', 'user.profile', 'user.profile.image', 'taggedUsers'],
+            select: PostsSelect,
+            order: { createdAt: "DESC" },
+            take: limit,
+            skip: page * limit
+        });
+
+        return list
     }
 
     async createPost(params: CreatePostDto) {
@@ -90,14 +119,14 @@ export class PostService {
         }
     }
 
-    async findPost(id : number){
+    async findPost(id: number) {
         let post = await this.postRepo.findOne({
-            where : {
+            where: {
                 id
             }
         })
 
-        if(!post) throw new NotFoundException("Post is not found")
+        if (!post) throw new NotFoundException("Post is not found")
 
         return post
     }
@@ -267,7 +296,7 @@ export class PostService {
         }
     }
 
-    async incrementField(postId : number, field : 'like' | 'view' | 'commentCount' | 'shared' , value : number){
-        await this.postRepo.increment({id : postId}, field, value)
+    async incrementField(postId: number, field: 'like' | 'view' | 'commentCount' | 'shared', value: number) {
+        await this.postRepo.increment({ id: postId }, field, value)
     }
 }

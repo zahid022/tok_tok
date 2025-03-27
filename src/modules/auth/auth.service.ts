@@ -173,6 +173,10 @@ export class AuthService {
 
         await this.clearAllAttempts(user)
 
+        if (user.isReport) {
+            throw new BadRequestException("You are ban")
+        }
+
         let token = this.generateToken(user.id)
 
         return {
@@ -226,7 +230,7 @@ export class AuthService {
                 userId: user.id,
                 code,
                 expireTime: addMinutes(new Date(), 30),
-                token : v4()
+                token: v4()
             })
 
             await otp.save()
@@ -241,7 +245,7 @@ export class AuthService {
                 context: {
                     username: user.username,
                     code: otp.code,
-                    resetLink : params.resetLink
+                    resetLink: params.resetLink
                 },
             });
 
@@ -257,18 +261,18 @@ export class AuthService {
         }
     }
 
-    async confirmOtpCode(params : ConfirmOtpDto){
+    async confirmOtpCode(params: ConfirmOtpDto) {
         let otp = await this.otpRepo.findOne({
-            where : {
-                code : params.code,
+            where: {
+                code: params.code,
                 expireTime: MoreThan(new Date())
             }
         })
 
-        if(!otp) throw new NotFoundException("Otp code is wrong")
+        if (!otp) throw new NotFoundException("Otp code is wrong")
 
         return {
-            token : otp.token
+            token: otp.token
         }
     }
 
@@ -278,13 +282,13 @@ export class AuthService {
         }
 
         let otp = await this.otpRepo.findOne({
-            where : {
-                token : params.token,
+            where: {
+                token: params.token,
                 expireTime: MoreThan(new Date())
             }
         })
 
-        if(!otp) throw new BadRequestException("Token is invalid")
+        if (!otp) throw new BadRequestException("Token is invalid")
 
         const [user, attemptCheck] = await Promise.all([
             this.userRepo.findOne({
@@ -407,6 +411,10 @@ export class AuthService {
             })
         }
 
+        if (user.isReport) {
+            throw new BadRequestException("You are ban")
+        }
+
         let token = this.generateToken(user.id)
 
         return {
@@ -432,13 +440,13 @@ export class AuthService {
         }
     }
 
-    async addLoginAttempts(user : UserEntity){
+    async addLoginAttempts(user: UserEntity) {
         let ip = this.cls.get("ip")
 
         let attempt = this.loginAttemptRepo.create({
             ip,
-            userId : user.id,
-            createdAt : new Date()
+            userId: user.id,
+            createdAt: new Date()
         })
 
         await attempt.save()
@@ -446,11 +454,11 @@ export class AuthService {
         return true
     }
 
-    async clearAllAttempts(user : UserEntity){
+    async clearAllAttempts(user: UserEntity) {
         let ip = this.cls.get("ip")
 
         await this.loginAttemptRepo.delete({
-            userId : user.id,
+            userId: user.id,
             ip
         })
     }
