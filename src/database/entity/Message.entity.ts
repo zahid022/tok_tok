@@ -1,7 +1,7 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserEntity } from "./User.entity";
-import { ChatEntity } from "./Chat_single.entity";
 import { MessageMediaEntity } from "./MessageMedia.entity";
+import { ChatEntity } from "./Chat.entity";
 
 @Entity("messages")
 export class MessageEntity extends BaseEntity {

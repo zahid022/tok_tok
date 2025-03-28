@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ChatEntity } from "./Chat_single.entity";
 import { UserEntity } from "./User.entity";
+import { ChatEntity } from "./Chat.entity";
 
 @Entity("participants")
 export class ParticipantEntity extends BaseEntity {
@@ -9,6 +9,9 @@ export class ParticipantEntity extends BaseEntity {
 
     @Column()
     chatId: number;
+
+    @Column()
+    request: boolean;
 
     @Column()
     userId: number;
