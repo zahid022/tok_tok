@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { AuthGuard } from "src/shared/guards/Auth.guard";
 import { ApiBearerAuth } from "@nestjs/swagger";
 import { CreateSingleChatDto } from "./dto/create-chat.dto";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
+import { CreateChatGroupDto } from "./dto/create-chat-group.dto";
 
 @Controller("chat")
 @UseGuards(AuthGuard)
@@ -20,6 +21,13 @@ export class ChatController {
         return this.chatService.chatList(query)
     }
 
+    @Get(":id")
+    getItem(
+        @Param("id") id : number
+    ){
+        return this.chatService.getItem(id)
+    }
+
     @Get("request")
     chatRequestList(
         @Query() query : PaginationDto
@@ -32,5 +40,19 @@ export class ChatController {
         @Body() body : CreateSingleChatDto
     ){
         return this.chatService.createSingleChat(body)
+    }
+
+    @Post("group")
+    group(
+        @Body() body : CreateChatGroupDto
+    ){
+        return this.chatService.createChatGroup(body)
+    }
+
+    @Post(":id/leave")
+    leaveGroup(
+        @Param("id") id : number
+    ){
+        return this.chatService.leaveGroup(id)
     }
 }

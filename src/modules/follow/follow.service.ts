@@ -3,7 +3,7 @@ import { InjectDataSource } from "@nestjs/typeorm";
 import { ClsService } from "nestjs-cls";
 import { FollowEntity } from "src/database/entity/Follow.entity";
 import { UserEntity } from "src/database/entity/User.entity";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { AcceptRequestDto, FollowRequestDto, RemoveFollowerDto, RemoveFollowingDto } from "./dto/follow-request.dto";
 import { FollowStatusEnum } from "src/shared/enums/Follow.enum";
 import { UserService } from "../user/user.service";
@@ -23,7 +23,7 @@ export class FollowService {
         @Inject(forwardRef(() => ProfileService))
         private profileService: ProfileService,
         @Inject(forwardRef(() => BanService))
-        private banService : BanService
+        private banService: BanService
     ) {
         this.followRepo = this.dataSource.getRepository(FollowEntity)
     }
@@ -105,7 +105,7 @@ export class FollowService {
 
         let isBan = await this.banService.checkBan(user.id, params.to)
 
-        if(isBan) throw new ForbiddenException("You cannot follow this user. Either you have banned this user or they have banned you.")
+        if (isBan) throw new ForbiddenException("You cannot follow this user. Either you have banned this user or they have banned you.")
 
         let checkFollow = await this.followRepo.findOne({
             where: {
@@ -292,5 +292,26 @@ export class FollowService {
         return {
             message: "Following has been successfully removed"
         }
+    }
+
+    async getUsersWithoutAccess(userIds: number[]) {
+        let myUser = this.cls.get<UserEntity>("user")
+
+        const privateUsers = await this.userService.getPrivateUsers(userIds)
+
+        const followedUsers = await this.followRepo.find({
+            where: {
+                fromId: myUser.id,
+                toId: In(userIds),
+                status: FollowStatusEnum.ACCEPT
+            },
+            select: ["toId"]
+        });
+
+        const followedUserIds = followedUsers.map(f => f.toId);
+
+        return privateUsers
+            .map(user => user.id)
+            .filter(id => !followedUserIds.includes(id));
     }
 }

@@ -40,6 +40,15 @@ export class UserService {
         });
     }
 
+    async getPrivateUsers(ids: number[]) {
+        const privateUsers = await this.userRepo.find({
+            where: { id: In(ids), isPrivate: true },
+            select: ["id"]
+        });
+
+        return privateUsers
+    }
+
     async searchUser(params: SearchUserDto) {
         let page = (params.page || 1) - 1;
         let limit = params.limit;
@@ -165,12 +174,12 @@ export class UserService {
         }
     }
 
-    async incrementReportCount(id : number){
+    async incrementReportCount(id: number) {
         let user = await this.findUser(id)
 
-        if(!user) throw new NotFoundException("User is not found")
+        if (!user) throw new NotFoundException("User is not found")
 
-        await this.userRepo.increment({id : user.id}, 'reportCount', 1)
+        await this.userRepo.increment({ id: user.id }, 'reportCount', 1)
 
         return true
     }

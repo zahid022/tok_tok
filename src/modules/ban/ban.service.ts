@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { BanEntity } from "src/database/entity/Ban.entity";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { UserService } from "../user/user.service";
 import { ClsService } from "nestjs-cls";
 import { UserEntity } from "src/database/entity/User.entity";
@@ -127,5 +127,21 @@ export class BanService {
         });
 
         return exists;
+    }
+
+    async getBannedUsers(userIds: number[]) {
+        let myUser = this.cls.get<UserEntity>("user")
+
+        const bannedUsers = await this.banRepo.find({
+            where: [
+                { fromId: myUser.id, toId: In(userIds) },
+                { toId: myUser.id, fromId: In(userIds) }
+            ],
+            select: ["fromId", "toId"]
+        });
+
+        return bannedUsers.map(ban =>
+            ban.fromId === myUser.id ? ban.toId : ban.fromId
+        );
     }
 }

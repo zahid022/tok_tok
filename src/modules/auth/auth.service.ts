@@ -206,7 +206,7 @@ export class AuthService {
 
         if (attemptCheck.attempt > 3) {
             throw new HttpException(
-                'Too many requests',
+                'Try again in 1 hour',
                 HttpStatus.TOO_MANY_REQUESTS,
             );
         }

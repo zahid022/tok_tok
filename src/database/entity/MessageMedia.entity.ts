@@ -10,13 +10,13 @@ export class MessageMediaEntity extends BaseEntity {
     @Column()
     url : string;
 
-    @Column()
+    @Column({nullable : true})
     messageId : number;
 
     @Column({type : 'enum', enum : MessageMediaTypes})
     type : MessageMediaTypes
 
-    @OneToOne(() => MessageEntity, (message) => message)
+    @OneToOne(() => MessageEntity, (message) => message, {onDelete : "CASCADE"})
     @JoinColumn({name : "messageId"})
     message : MessageEntity
 }

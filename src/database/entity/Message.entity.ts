@@ -17,6 +17,9 @@ export class MessageEntity extends BaseEntity {
     @Column()
     chatId : number;
 
+    @Column({default : false})
+    isDeleted : boolean;
+
     @ManyToOne(() => UserEntity)
     @JoinColumn({name : "userId"})
     user : UserEntity
