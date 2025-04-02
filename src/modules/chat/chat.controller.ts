@@ -5,6 +5,7 @@ import { ApiBearerAuth } from "@nestjs/swagger";
 import { CreateSingleChatDto } from "./dto/create-chat.dto";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { CreateChatGroupDto } from "./dto/create-chat-group.dto";
+import { UpdateChatDto } from "./dto/update-chat.dto";
 
 @Controller("chat")
 @UseGuards(AuthGuard)
@@ -47,6 +48,14 @@ export class ChatController {
         @Body() body : CreateChatGroupDto
     ){
         return this.chatService.createChatGroup(body)
+    }
+
+    @Post(":id/update")
+    updateGroup(
+        @Param("id") id : number,
+        @Body() body : UpdateChatDto
+    ){
+        return this.chatService.updateGroup(id , body)
     }
 
     @Post(":id/leave")

@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { ChatEntity } from "src/database/entity/Chat.entity";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { CreateSingleChatDto } from "./dto/create-chat.dto";
 import { ClsService } from "nestjs-cls";
 import { UserEntity } from "src/database/entity/User.entity";
@@ -12,6 +12,7 @@ import { FollowService } from "../follow/follow.service";
 import { MessageService } from "./message/message.service";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { CreateChatGroupDto } from "./dto/create-chat-group.dto";
+import { UpdateChatDto } from "./dto/update-chat.dto";
 
 @Injectable()
 export class ChatService {
@@ -326,7 +327,7 @@ export class ChatService {
 
         let checkParticipant = chat.participants.some(participant => participant.userId === myUser.id)
 
-        if(!checkParticipant) throw new NotFoundException("Chat is not found")
+        if (!checkParticipant) throw new NotFoundException("Chat is not found")
 
         if (chat.adminId === myUser.id) {
             let participantIds = chat.participants.filter(participant => participant.userId !== myUser.id)
@@ -346,5 +347,63 @@ export class ChatService {
         return {
             message: "You have successfully left the group."
         }
+    }
+
+    async updateGroup(chatId: number, params: UpdateChatDto) {
+        let myUser = this.cls.get<UserEntity>("user")
+
+        let chat = await this.chatRepo.findOne({
+            where: {
+                id: chatId,
+                isGroup: true
+            },
+            relations: ['participants']
+        })
+
+        if (!chat) throw new NotFoundException("Chat is not found")
+
+        if (chat.adminId !== myUser.id) {
+            throw new ForbiddenException("You're not allowed to update this chat")
+        }
+
+        if (params.name) {
+            chat.name = params.name
+        }
+
+        if (params.participants) {
+            let participantIds = [...new Set(params.participants)];
+
+            let users = await this.userService.findUsers(participantIds);
+
+            if (users.length != participantIds.length) {
+                throw new NotFoundException('Some of participants are not found');
+            }
+
+            let participants = participantIds.map((userId) => {
+                let check = chat.participants.find(
+                    (participant) => participant.userId === userId,
+                );
+
+                return check || this.participantRepo.create({ userId });
+            });
+
+            let deleteParticipant = chat.participants.filter(
+                (participant) => !participantIds.includes(participant.id),
+            );
+            let deleteParticipantIds = deleteParticipant.map(
+                (participant) => participant.id,
+            );
+            await this.participantRepo.delete({ id: In(deleteParticipantIds) });
+
+            chat.participants = participants;
+
+        }
+        
+        await chat.save();
+
+        return {
+            message: 'Chat is updated successfully',
+            chat,
+        };
     }
 }

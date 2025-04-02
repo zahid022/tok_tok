@@ -6,7 +6,7 @@ import { UserService } from "../user.service";
 import { ClsService } from "nestjs-cls";
 import { UserEntity } from "src/database/entity/User.entity";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { ProfileSelect } from "src/shared/selects/profile.select";
+import { MyProfileSelect, ProfileSelect } from "src/shared/selects/profile.select";
 import { FollowService } from "src/modules/follow/follow.service";
 import { BanService } from "src/modules/ban/ban.service";
 
@@ -49,8 +49,8 @@ export class ProfileService {
             where: {
                 userId: user.id
             },
-            relations: ['image'],
-            select: ProfileSelect
+            relations: ['image', 'user'],
+            select: MyProfileSelect
         })
 
         if (!profile) throw new NotFoundException("Profile is not found")
