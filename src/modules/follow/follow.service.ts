@@ -10,6 +10,8 @@ import { UserService } from "../user/user.service";
 import { ProfileService } from "../user/profile/profile.service";
 import { FollowersSelect, FollowingsSelect, PendingRequestsSelect } from "src/shared/selects/follow.select";
 import { BanService } from "../ban/ban.service";
+import { NotificationService } from "../notification/notification.service";
+import { NotificationEnum } from "src/shared/enums/Notification.enum";
 
 @Injectable()
 export class FollowService {
@@ -23,7 +25,8 @@ export class FollowService {
         @Inject(forwardRef(() => ProfileService))
         private profileService: ProfileService,
         @Inject(forwardRef(() => BanService))
-        private banService: BanService
+        private banService: BanService,
+        private notificationService : NotificationService
     ) {
         this.followRepo = this.dataSource.getRepository(FollowEntity)
     }
@@ -126,6 +129,8 @@ export class FollowService {
 
         if (!toUser) throw new NotFoundException("User is not found")
 
+        let notification = `${user.username} wants to follow you.`
+
         let follow = this.followRepo.create({
             fromId: user.id,
             toId: toUser.id,
@@ -141,7 +146,18 @@ export class FollowService {
             promises.push(this.profileService.incrementField(toUser.id, 'follower', 1))
 
             await Promise.all(promises);
+
+            notification = `${user.username} has started following you.`
         }
+
+        await this.notificationService.createNotification({
+            message : notification,
+            type : NotificationEnum.FOLLOW,
+            userId : toUser.id,
+            commentId : undefined,
+            postId : undefined,
+            storyId : undefined
+        })
 
         return {
             message: "Follow has been sent successfully"
@@ -206,6 +222,12 @@ export class FollowService {
         promises.push(this.profileService.incrementField(params.from, 'following', 1))
 
         await Promise.all(promises)
+
+        await this.notificationService.createNotification({
+            userId : follow.fromId,
+            message : `${user.username} has accepted your follow request.`,
+            type : NotificationEnum.FOLLOW
+        })
 
         return {
             message: "Follow request accepted successfully."

@@ -6,6 +6,7 @@ import { FollowModule } from "../follow/follow.module";
 import { BanModule } from "../ban/ban.module";
 import { PostActionModule } from "./post_action/post_action.module";
 import { PostCommentModule } from "./post_comment/postComment.module";
+import { NotificationModule } from "../notification/notification.module";
 
 @Module({
     imports : [
@@ -13,7 +14,8 @@ import { PostCommentModule } from "./post_comment/postComment.module";
         forwardRef(() => FollowModule), 
         forwardRef(() => BanModule), 
         forwardRef(() => PostActionModule),
-        forwardRef(() => PostCommentModule)
+        forwardRef(() => PostCommentModule),
+        NotificationModule
     ],
     controllers : [PostController],
     providers : [PostService],

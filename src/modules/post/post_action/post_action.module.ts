@@ -4,9 +4,10 @@ import { PostActionService } from "./post_action.service";
 import { PostModule } from "../post.module";
 import { FollowModule } from "src/modules/follow/follow.module";
 import { BanModule } from "src/modules/ban/ban.module";
+import { NotificationModule } from "src/modules/notification/notification.module";
 
 @Module({
-    imports : [forwardRef(() => PostModule), FollowModule, BanModule],
+    imports : [forwardRef(() => PostModule), FollowModule, BanModule, NotificationModule],
     controllers : [PostActionController],
     providers : [PostActionService],
     exports : [PostActionService]

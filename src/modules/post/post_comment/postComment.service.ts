@@ -13,6 +13,8 @@ import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { CommentSelect } from "src/shared/selects/comment.select";
 import { CommentUpdateDto } from "./dto/post-comment-update.dto";
 import { CommentLikeEntity } from "src/database/entity/CommentLike.entity";
+import { NotificationService } from "src/modules/notification/notification.service";
+import { NotificationEnum } from "src/shared/enums/Notification.enum";
 
 @Injectable()
 export class PostCommentService {
@@ -25,7 +27,8 @@ export class PostCommentService {
         private userService: UserService,
         private postService: PostService,
         private banService: BanService,
-        private followService: FollowService
+        private followService: FollowService,
+        private notificationService : NotificationService
     ) {
         this.postCommentRepo = this.dataSource.getRepository(PostCommentEntity)
         this.postCommentLikeRepo = this.dataSource.getRepository(CommentLikeEntity)
@@ -125,6 +128,14 @@ export class PostCommentService {
 
         await this.postService.incrementField(post.id, 'commentCount', 1)
 
+        await this.notificationService.createNotification({
+            userId : post.userId,
+            type : NotificationEnum.COMMENT,
+            message : `${myUser.username} commented on your post`,
+            postId : post.id,
+            commentId : comment.id
+        })
+
         return {
             message: "Comment is created successfully"
         }
@@ -163,6 +174,14 @@ export class PostCommentService {
 
             await like.save();
             message = "Like added";
+
+            await this.notificationService.createNotification({
+                userId : comment.userId,
+                message : `${user.username} liked your comment`,
+                type : NotificationEnum.LIKE,
+                postId : comment.postId,
+                commentId : comment.id
+            })
         }
 
         await this.incrementField(commentId, 'likesCount', value);

@@ -22,6 +22,8 @@ import { StoryModule } from './modules/story/story.module';
 import { HighlightModule } from './modules/highlight/highlight.module';
 import { ReportModule } from './modules/report/report.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { SocketModule } from './modules/socket/socket.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -102,7 +104,9 @@ import { ChatModule } from './modules/chat/chat.module';
     StoryModule,
     HighlightModule,
     ReportModule,
-    ChatModule
+    ChatModule,
+    SocketModule,
+    NotificationModule
   ],
   controllers: [],
   providers: [AppService],

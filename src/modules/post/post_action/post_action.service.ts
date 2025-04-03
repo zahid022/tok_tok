@@ -9,6 +9,8 @@ import { UserEntity } from "src/database/entity/User.entity";
 import { UserService } from "src/modules/user/user.service";
 import { BanService } from "src/modules/ban/ban.service";
 import { PostActionTypes } from "src/shared/enums/Post.enum";
+import { NotificationService } from "src/modules/notification/notification.service";
+import { NotificationEnum } from "src/shared/enums/Notification.enum";
 
 @Injectable()
 export class PostActionService {
@@ -21,7 +23,8 @@ export class PostActionService {
         private postService: PostService,
         private followService: FollowService,
         private userService: UserService,
-        private banService: BanService
+        private banService: BanService,
+        private notificationService : NotificationService
     ) {
         this.actionRepo = this.dataSource.getRepository(PostActionEntity)
     }
@@ -69,6 +72,15 @@ export class PostActionService {
 
             await this.actionRepo.save(like);
             await this.postService.incrementField(post.id, 'like', 1)
+
+            if(post.userId !== myUser.id){
+                await this.notificationService.createNotification({
+                    userId : post.userId,
+                    type : NotificationEnum.LIKE,
+                    message : `${myUser.username} liked your post`,
+                    postId : post.id
+                })
+            }
         }
 
         return {

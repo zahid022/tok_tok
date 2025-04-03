@@ -9,6 +9,7 @@ import { ClsService } from "nestjs-cls";
 import { UserEntity } from "src/database/entity/User.entity";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { MessageSelect } from "src/shared/selects/message.select";
+import { SocketGateway } from "src/modules/socket/socket.gateway";
 
 @Injectable()
 export class MessageService {
@@ -19,7 +20,8 @@ export class MessageService {
         @InjectDataSource() private dataSource: DataSource,
         @Inject(forwardRef(() => ChatService))
         private chatService: ChatService,
-        private cls: ClsService
+        private cls: ClsService,
+        private socketGateway: SocketGateway
     ) {
         this.messageRepo = this.dataSource.getRepository(MessageEntity)
         this.participantRepo = this.dataSource.getRepository(ParticipantEntity)
@@ -58,8 +60,13 @@ export class MessageService {
             'unreadCount',
             1
         )
+        
+        let rooms = this.socketGateway.server.to(chat.participants.map((participant) => `user_${participant.userId}`));
+        rooms.emit('message-created', { id: message.id })
 
         await this.chatService.updateChatLastMessage(chatId, message.id)
+
+        rooms.emit('chat-updated', { id: chat.id });
 
         return message
 
@@ -95,25 +102,25 @@ export class MessageService {
         return messages
     }
 
-    async deleteMessage(chatId : number, messageId : number){
+    async deleteMessage(chatId: number, messageId: number) {
         let user = this.cls.get<UserEntity>("user")
 
         let message = await this.messageRepo.findOne({
-            where : {
+            where: {
                 chatId,
-                userId : user.id,
-                id : messageId
+                userId: user.id,
+                id: messageId
             }
         })
 
-        if(!message) throw new NotFoundException("Message is not found")
+        if (!message) throw new NotFoundException("Message is not found")
 
         message.isDeleted = true
 
         await message.save()
 
         return {
-            message : "Message is deleted successfully"
+            message: "Message is deleted successfully"
         }
     }
 }

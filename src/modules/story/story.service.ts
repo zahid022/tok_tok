@@ -12,6 +12,8 @@ import { BanService } from "../ban/ban.service";
 import { UserService } from "../user/user.service";
 import { StoryActionEntity } from "src/database/entity/StoryAction.entity";
 import { StoryActionTypes } from "src/shared/enums/Story.enum";
+import { NotificationService } from "../notification/notification.service";
+import { NotificationEnum } from "src/shared/enums/Notification.enum";
 
 @Injectable()
 export class StoryService {
@@ -24,7 +26,8 @@ export class StoryService {
         private followService: FollowService,
         private banService: BanService,
         @Inject(forwardRef(() => UserService))
-        private userService: UserService
+        private userService: UserService,
+        private notificationService : NotificationService
     ) {
         this.storyRepo = this.dataSource.getRepository(StoryEntity)
         this.storyActionRepo = this.dataSource.getRepository(StoryActionEntity)
@@ -243,6 +246,15 @@ export class StoryService {
             await like.save()
 
             message = 'story is liked successfully'
+
+            if(story.userId !== myUser.id) {
+                await this.notificationService.createNotification({
+                    userId : story.userId,
+                    type : NotificationEnum.LIKE,
+                    message : `${myUser.username} liked your story`,
+                    storyId : story.id
+                })
+            }
         }
 
         return { message }

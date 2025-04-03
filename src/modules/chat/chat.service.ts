@@ -33,14 +33,9 @@ export class ChatService {
     }
 
     async findChat(chatId: number) {
-        let user = this.cls.get<UserEntity>("user")
-
         let chat = await this.chatRepo.findOne({
             where: {
-                id: chatId,
-                participants: {
-                    userId: user.id
-                }
+                id: chatId
             },
             relations: ['participants']
         })

@@ -12,6 +12,8 @@ import { BanService } from "../ban/ban.service";
 import { PaginationDto } from "src/shared/dto/pagination.dto";
 import { PostsSelect } from "src/shared/selects/post.selects";
 import { PostActionService } from "./post_action/post_action.service";
+import { NotificationService } from "../notification/notification.service";
+import { NotificationEnum } from "src/shared/enums/Notification.enum";
 
 @Injectable()
 export class PostService {
@@ -29,7 +31,8 @@ export class PostService {
         private banService: BanService,
         @Inject(forwardRef(() => PostActionService))
         private postActionService: PostActionService,
-        private cls: ClsService
+        private cls: ClsService,
+        private notificationService: NotificationService
     ) {
         this.postRepo = this.dataSource.getRepository(PostEntity)
     }
@@ -113,6 +116,17 @@ export class PostService {
         await post.save()
 
         await this.profileService.incrementField(myUser.id, 'postCount', 1)
+
+        if (post.taggedUsers.length > 0) {
+            post.taggedUsers.map(async tag => {
+                await this.notificationService.createNotification({
+                    userId: tag.id,
+                    type: NotificationEnum.TAGS,
+                    message: `${myUser.username} tagged you in a post`,
+                    postId: post.id
+                })
+            })
+        }
 
         return {
             message: "Post is created successfully"

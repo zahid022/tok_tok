@@ -174,6 +174,12 @@ export class UserService {
         }
     }
 
+    updateProfessionalAccount(){
+        let user = this.cls.get<UserEntity>("user")
+
+
+    }
+
     async incrementReportCount(id: number) {
         let user = await this.findUser(id)
 
