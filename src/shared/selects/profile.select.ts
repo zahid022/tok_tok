@@ -36,6 +36,11 @@ export const ProfileSelect = {
     url: true,
     createdAt: true,
     updatedAt: true
+  },
+  user: {
+    id : true,
+    username : true,
+    isPrivate : true
   }
 }
 

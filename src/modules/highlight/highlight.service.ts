@@ -75,7 +75,7 @@ export class HighlightService {
 
         let list = await this.highlightRepo.find({
             where: {
-                userId: myUser.id
+                userId: myUser.id !== id ? id : myUser.id
             },
             order: { createdAt: "DESC" }
         })

@@ -44,7 +44,7 @@
                 let firebaseResult = await signInWithPopup(auth, provider);
                 let token = await firebaseResult.user.getIdToken();
 
-                let result = await fetch('http://localhost:3001/api/auth/firebase', {
+                let result = await fetch('http://localhost:3002/api/auth/firebase', {
                     method: 'POST',
                     headers: { 'content-type': 'application/json' },
                     body: JSON.stringify({ token }),

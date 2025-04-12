@@ -18,6 +18,7 @@ import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { ClsService } from "nestjs-cls";
 import { FirebaseService } from "src/libs/firebase/firebase.service";
 import { ImageEntity } from "src/database/entity/Image.entity";
+import { CheckDto } from "./dto/check.dto";
 
 @Injectable()
 export class AuthService {
@@ -106,7 +107,17 @@ export class AuthService {
 
         return {
             message: "User is created successfully",
-            token
+            token,
+            id: user.id
+        }
+    }
+
+    check(params: CheckDto) {
+        try {
+            this.jwt.verify(params.token);
+            return {status : true}
+        } catch {
+            return {status : false}
         }
     }
 
@@ -180,7 +191,8 @@ export class AuthService {
         let token = this.generateToken(user.id)
 
         return {
-            token
+            token,
+            id: user.id
         }
     }
 
@@ -329,7 +341,8 @@ export class AuthService {
 
         return {
             message: 'Password is updated successfully',
-            token
+            token,
+            id: user.id
         };
     }
 

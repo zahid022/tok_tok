@@ -28,7 +28,7 @@ export class PostCommentService {
         private postService: PostService,
         private banService: BanService,
         private followService: FollowService,
-        private notificationService : NotificationService
+        private notificationService: NotificationService
     ) {
         this.postCommentRepo = this.dataSource.getRepository(PostCommentEntity)
         this.postCommentLikeRepo = this.dataSource.getRepository(CommentLikeEntity)
@@ -129,11 +129,11 @@ export class PostCommentService {
         await this.postService.incrementField(post.id, 'commentCount', 1)
 
         await this.notificationService.createNotification({
-            userId : post.userId,
-            type : NotificationEnum.COMMENT,
-            message : `${myUser.username} commented on your post`,
-            postId : post.id,
-            commentId : comment.id
+            userId: post.userId,
+            type: NotificationEnum.COMMENT,
+            message: `${myUser.username} commented on your post`,
+            postId: post.id,
+            commentId: comment.id
         })
 
         return {
@@ -176,11 +176,11 @@ export class PostCommentService {
             message = "Like added";
 
             await this.notificationService.createNotification({
-                userId : comment.userId,
-                message : `${user.username} liked your comment`,
-                type : NotificationEnum.LIKE,
-                postId : comment.postId,
-                commentId : comment.id
+                userId: comment.userId,
+                message: `${user.username} liked your comment`,
+                type: NotificationEnum.LIKE,
+                postId: comment.postId,
+                commentId: comment.id
             })
         }
 
@@ -230,21 +230,23 @@ export class PostCommentService {
 
         if (!comment) throw new NotFoundException("Comment is not found")
 
-        if (user.id !== post.userId || user.id !== comment.userId) {
+        if (user.id === post.userId || user.id === comment.userId) {
+            await this.postCommentRepo.delete({ id: commentId })
+
+            if (comment.parentCommentId) {
+                await this.incrementField(comment.parentCommentId, 'replyCount', -1)
+            }
+
+            await this.postService.incrementField(post.id, 'commentCount', -1)
+
+            return {
+                message: "Comment is deleted successfully"
+            }
+        }else{
             throw new ForbiddenException("You do not have permission to delete this comment");
         }
 
-        await this.postCommentRepo.delete({ id: commentId })
 
-        if (comment.parentCommentId) {
-            await this.incrementField(comment.parentCommentId, 'replyCount', -1)
-        }
-
-        await this.postService.incrementField(post.id, 'commentCount', -1)
-
-        return {
-            message: "Comment is deleted successfully"
-        }
     }
 
     async incrementField(id: number, field: "replyCount" | "likesCount", value: number) {

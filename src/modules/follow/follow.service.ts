@@ -31,6 +31,21 @@ export class FollowService {
         this.followRepo = this.dataSource.getRepository(FollowEntity)
     }
 
+    async checkStatus(fromId : number, toId : number){
+        let follow = await this.followRepo.findOne({
+            where : {
+                fromId,
+                toId
+            }
+        }) 
+
+        if(!follow){
+            return false
+        }
+
+        return follow.status
+    }
+
     async listFollower(id: number) {
         let user = this.cls.get<UserEntity>("user")
 

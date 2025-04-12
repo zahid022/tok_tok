@@ -73,23 +73,27 @@ export class ProfileService {
 
         if (isBan) throw new ForbiddenException("You cannot view this profile. Either you have banned this user or they have banned you.")
 
-        if (profileUser.isPrivate) {
-            let access = await this.followService.checkFollow(user.id, profileUser.id)
+        // if (profileUser.isPrivate) {
+        //     let access = await this.followService.checkFollow(user.id, profileUser.id)
 
-            if (!access) {
-                throw new ForbiddenException("You do not have access to view this private profile.");
-            }
-        }
+        //     if (!access) {
+        //         throw new ForbiddenException("You do not have access to view this private profile.");
+        //     }
+        // }
+
+        let isFollowing : string | boolean = false
+
+        isFollowing = await this.followService.checkStatus(user.id, id)
 
         let profile = await this.profileRepo.findOne({
             where: {
                 userId: profileUser.id
             },
-            relations: ['image'],
+            relations: ['image', 'user'],
             select: ProfileSelect
         })
 
-        return profile
+        return {profile, isFollowing}
     }
 
     async incrementField(id: number, field: 'follower' | 'following' | 'postCount', value: number) {
